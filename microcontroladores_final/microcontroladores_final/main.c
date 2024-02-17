@@ -5,7 +5,7 @@
  * Author : rafad
  */ 
 #define F_CPU 16000000 //Frecuencia del microcontrolador
-#define BAUDRATE 9600 //Velocidad de transmisión de baudios
+#define BAUDRATE 9600 //Velocidad de transmisiï¿½n de baudios
 //INCLUDES
 #include <avr/io.h>
 #include <math.h>
@@ -26,21 +26,21 @@ volatile uint8_t comando_ing = 1;
 #define K 0.2462; //Tomado de parcial
 #define R_prima 7.08; //Tomado de parcial
 #define b_visc 0; //Asumido
-#define PULSES_PER_REVOLUTION 1000 // Número de pulsos por revolución del encoder. No es el correcto para nuestro
-//encoder. Se necesita determinar la cantidad de pulsos del encoder por revolución del eje.
-//Nos podemos ayudar con éste código
+#define PULSES_PER_REVOLUTION 1000 // Nï¿½mero de pulsos por revoluciï¿½n del encoder. No es el correcto para nuestro
+//encoder. Se necesita determinar la cantidad de pulsos del encoder por revoluciï¿½n del eje.
+//Nos podemos ayudar con ï¿½ste cï¿½digo
 
 
 //VARIABLES GLOBALES
 volatile float t0 = 0;
 volatile float t = 0; //Momento en el tiempo que se debe conseguir con timers medido en segundos
 volatile float w = 0; //Se necesita determinar por medio del encoder e interrupciones
-volatile float consigna_torque = 60; //Medida en mNm (mili newtons metro) y cómo ingresar la consigna
+volatile float consigna_torque = 60; //Medida en mNm (mili newtons metro) y cï¿½mo ingresar la consigna
 volatile float torque_resistente = b_visc*w;
 volatile float consigna_ia = ((consigna_torque/1000)+torque_resistente)/K; //Se pasa a Nm y luego se divide
 volatile	float ia0 = 0;
 volatile	float Et = K*w;
-volatile	float Ut = 20; //Es la tensión aplicada al motor. En la primera iteración es la tensión inicial
+volatile	float Ut = 20; //Es la tensiï¿½n aplicada al motor. En la primera iteraciï¿½n es la tensiï¿½n inicial
 volatile float consigna_va = Ut; //Se trata de que sea ==Ut
 volatile	float It = (Ut-Et)/RA;
 volatile	float ia = (ia0-It)*exp((-RA/LA)*(t-t0)) + It; //Corriente
@@ -56,24 +56,24 @@ void init_encoder() {
 	// Habilitar pull-up interno en el PIN 4
 	PORTD |= (1 << PCINT20);
 	
-	// Habilitar interrupción por cambio de nivel en PCINT20 (PIN 4)
+	// Habilitar interrupciï¿½n por cambio de nivel en PCINT20 (PIN 4)
 	PCICR |= (1 << PCIE2);
 	PCMSK2 |= (1 << PCINT20);
 	}
 
 void init_timer() {
-	//MEDICIÓN DE LA VELOCIDAD	
+	//MEDICIï¿½N DE LA VELOCIDAD	
 	
-	// Configurar el Timer1 en modo CTC. Éste se usará para medir la velocidad del motor
+	// Configurar el Timer1 en modo CTC. ï¿½ste se usarï¿½ para medir la velocidad del motor
 	TCCR1B |= (1 << WGM12);
 	
 	// Configurar el preescalador del Timer1
 	TCCR1B |= ((1 << CS10) | (1 << CS11)); // Preescalador 64
 	
-	// Configurar el valor de comparación para que el temporizador se desborde cada 1 ms
+	// Configurar el valor de comparaciï¿½n para que el temporizador se desborde cada 1 ms
 	OCR1A = F_CPU / (TIMER_PRESCALER * 1000) - 1; //249
 	
-	// Habilitar la interrupción de comparación del Timer1
+	// Habilitar la interrupciï¿½n de comparaciï¿½n del Timer1
 	TIMSK1 |= (1 << OCIE1A);
 	
 	//PWM EN TIMER0
@@ -87,7 +87,9 @@ void init_UART(){
 	UCSR0B |= (3<<UCSZ00);
 }
 
-//FUNCIONES DE INTERRUPCIÓN
+//FUNCIONES DE INTERRUPCIï¿½N
+
+// Deberian ser mÃ¡s cortas, para no perder otras interrupciones
 ISR(PCINT2_vect) {
 	// Incrementar el contador de pulsos
 	if (PIND & (1 << PCINT20)) {
@@ -99,7 +101,7 @@ ISR(PCINT2_vect) {
 
 ISR(TIMER1_COMPA_vect) {
 	// Actualizar la velocidad del motor cada vez que el temporizador se desborda (cada 1 ms)
-	// Calcular la diferencia en el contador de pulsos desde la última interrupción del temporizador
+	// Calcular la diferencia en el contador de pulsos desde la ï¿½ltima interrupciï¿½n del temporizador
 	uint16_t pulse_diff = pulse_count - prev_pulse_count;
 	prev_pulse_count = pulse_count;
 	
@@ -107,7 +109,7 @@ ISR(TIMER1_COMPA_vect) {
 	motor_speed = ((pulse_diff * 60 * TIMER_PRESCALER) / PULSES_PER_REVOLUTION) * (1000 / (F_CPU / TIMER_PRESCALER));
 	//Conversion a rad/s
 	w = (2*3.14159265/60)*motor_speed;
-	//Actualizamos también la variable de tiempo
+	//Actualizamos tambiï¿½n la variable de tiempo
 	t += 0.001;
 }
 
@@ -132,7 +134,7 @@ ISR(USART_RX_vect){
 }
 //OTRAS FUNCIONES
 
-//RECEPCIÓN. Pensada para recibir consignas de torque
+//RECEPCIï¿½N. Pensada para recibir consignas de torque
 uint8_t UART_Rec(){
 while(!(UCSR0A & (1<<RXCO)));
 return UDR0;
